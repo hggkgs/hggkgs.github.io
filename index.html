@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>♠️ Black Jack Online ♥️</title>
+  <style>
+    body {
+      background-color: #001a00;
+      color: white;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background-color: #142814;
+      border-radius: 20px;
+      padding: 30px;
+      max-width: 600px;
+      text-align: center;
+    }
+    h1 {
+      color: #FFD700;
+      font-size: 40px;
+    }
+    .card-box {
+      background-color: #004d00;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .dealer-box {
+      background-color: #333333;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .points {
+      color: #FFD700;
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+    button {
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 10px;
+      font-size: 18px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+    #deal { background-color: #228B22; }
+    #hit { background-color: #0066CC; }
+    #stand { background-color: #CC0000; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>♠️ Black Jack Online ♥️</h1>
+    <p id="message">🎲 Drücke 'Deal', um zu starten!</p>
+
+    <div class="card-box" id="player-box">🧍 Spieler: -</div>
+    <div class="dealer-box" id="dealer-box" style="display: none;">🤖 Dealer:</div>
+
+    <div class="points" id="points">💰 Punkte: 100</div>
+
+    <div>
+      <button id="deal">Deal</button>
+      <button id="hit">Hit</button>
+      <button id="stand">Stand</button>
+    </div>
+  </div>
+
+  <script>
+    let playerHand = [];
+    let dealerHand = [];
+    let message = document.getElementById("message");
+    let dealerBox = document.getElementById("dealer-box");
+    let playerBox = document.getElementById("player-box");
+    let pointsBox = document.getElementById("points");
+    let points = 100;
+    let standBlocked = false;
+
+    const fullDeck = [
+      2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,
+      8,8,8,8,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,11,11,11,11
+    ];
+    let cards = [...fullDeck];
+
+    function drawCard() {
+      const index = Math.floor(Math.random() * cards.length);
+      const card = cards[index];
+      cards.splice(index, 1);
+      return card;
+    }
+
+    function updateUI() {
+      playerBox.textContent = `🧍 Spieler: ${playerHand.join(", ")} (Summe: ${sum(playerHand)})`;
+      pointsBox.textContent = `💰 Punkte: ${points}`;
+    }
+
+    function sum(hand) {
+      return hand.reduce((a, b) => a + b, 0);
+    }
+
+    document.getElementById("deal").onclick = function() {
+      if (points < 10) {
+        message.textContent = "🤑 Du bist pleite. Kaufe mehr Währung im Shop (999,99€)";
+        return;
+      }
+      standBlocked = false;
+      points -= 10;
+      cards = [...fullDeck];
+      playerHand = [drawCard(), drawCard()];
+      dealerHand = [drawCard(), drawCard()];
+      dealerBox.style.display = "none";
+      message.textContent = "Neue Runde! 🍀 Viel Glück!";
+      updateUI();
+    };
+
+    document.getElementById("hit").onclick = function() {
+      playerHand.push(drawCard());
+      updateUI();
+      if (sum(playerHand) > 21) message.textContent = "💥 Bust! Du hast verloren.";
+    };
+
+    document.getElementById("stand").onclick = function() {
+      if (standBlocked) return;
+      standBlocked = true;
+      while (sum(dealerHand) < 17) dealerHand.push(drawCard());
+
+      const playerScore = sum(playerHand);
+      const dealerScore = sum(dealerHand);
+      let result;
+
+      if (dealerScore > 21) result = "🏆 Dealer bust! Du gewinnst!";
+      else if (playerScore > 21) result = "💥 Bust! Du hast verloren.";
+      else if (playerScore > dealerScore) result = "🎉 Du gewinnst!";
+      else if (playerScore < dealerScore) result = "❌ Dealer gewinnt.";
+      else result = "🤝 Unentschieden!";
+
+      message.textContent = result;
+
+      if (playerScore <= 21) {
+        if (dealerScore > 21 || playerScore > dealerScore) points += 20;
+        else if (playerScore === dealerScore) points += 10;
+      }
+
+      dealerBox.textContent = `🤖 Dealer: ${dealerHand.join(", ")} (Summe: ${dealerScore})`;
+      dealerBox.style.display = "block";
+      updateUI();
+    };
+  </script>
+</body>
+</html>
