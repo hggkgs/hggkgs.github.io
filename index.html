@@ -1,120 +1,222 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>♠️ Black Jack Online ♥️</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>♠️ Black Jack Online ♥️ — Hobbyprojekt</title>
   <style>
-    body {
-      background-color: #001a00;
-      color: white;
-      font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
+    :root{
+      --bg:#001a00;
+      --panel:#142814;
+      --accent:#FFD700;
+      --muted:#aaa;
     }
-    .container {
-      background-color: #142814;
-      border-radius: 20px;
-      padding: 30px;
-      max-width: 600px;
-      text-align: center;
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg);
+      color:#fff;
+      font-family:Arial,Helvetica,sans-serif;
+      padding:20px;
     }
-    h1 {
-      color: #FFD700;
-      font-size: 40px;
+    .container{
+      width:100%;
+      max-width:720px;
+      background:var(--panel);
+      border-radius:18px;
+      padding:22px;
+      text-align:center;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.6);
     }
-    .card-box, .dealer-box {
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
+    h1{ color:var(--accent); margin:6px 0 10px; font-size:34px;}
+    .card-box, .dealer-box{
+      border-radius:12px;
+      padding:14px;
+      margin:10px 0;
+      text-align:left;
     }
-    .card-box { background-color: #004d00; }
-    .dealer-box { background-color: #333333; }
-    .points {
-      color: #FFD700;
-      font-size: 22px;
-      margin-bottom: 20px;
+    .card-box{ background:#004d00 }
+    .dealer-box{ background:#333333 }
+    .points{ color:var(--accent); font-size:20px; margin:10px 0 16px;}
+    input[type="text"]{
+      width:70%;
+      padding:10px;
+      border-radius:8px;
+      border:none;
+      margin:6px 0;
+      font-size:16px;
     }
-    button {
-      color: white;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 10px;
-      font-size: 18px;
-      cursor: pointer;
-      margin: 5px;
+    button{
+      padding:10px 16px;
+      margin:6px;
+      font-size:15px;
+      border-radius:10px;
+      border:none;
+      cursor:pointer;
+      color:#fff;
     }
-    #deal { background-color: #228B22; }
-    #hit { background-color: #0066CC; }
-    #stand { background-color: #CC0000; }
-    #resetPoints { background-color: #FF8C00; }
-    #leaderboardBtn { background-color: #4444AA; }
+    #deal{ background:#228B22 }
+    #hit{ background:#0066CC }
+    #stand{ background:#CC0000 }
+    #resetPoints{ background:#FF8C00 }
+    #leaderboardBtn{ background:#4444AA }
+    #deleteAccount{ background:#882222 }
+    .small{ font-size:13px; color:var(--muted) }
+    footer{ margin-top:12px; font-size:13px; color:var(--muted) }
 
-    /* Login/Register */
-    #loginScreen {
-      text-align: center;
+    /* Modal */
+    .modal-backdrop{
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.6);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:50;
     }
-    input {
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      margin: 8px;
-      width: 70%;
+    .modal{
+      background:#0f2610;
+      border-radius:12px;
+      padding:18px;
+      width:100%;
+      max-width:720px;
+      color:#eee;
+      text-align:left;
+      max-height:90vh;
+      overflow:auto;
+    }
+    .modal h3{ margin-top:0; color:var(--accent) }
+    .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
+
+    /* Leaderboard list */
+    ol.leader{
+      text-align:left;
+      padding-left:20px;
+      color:#fff;
+    }
+    .tag{
+      display:inline-block;
+      font-size:12px;
+      padding:2px 8px;
+      border-radius:12px;
+      background:#2b2b2b;
+      margin-left:8px;
+    }
+    @media(max-width:520px){
+      input[type="text"]{ width:100% }
+      .row{ flex-direction:column }
     }
   </style>
 </head>
 <body>
+
+  <!-- LOGIN -->
   <div class="container" id="loginScreen">
     <h1>♠️ Black Jack Online ♥️</h1>
-    <h2>🔐 Anmelden oder Registrieren</h2>
-    <input type="text" id="username" placeholder="Benutzername">
-    <br>
-    <button id="loginBtn">Anmelden / Registrieren</button>
-    <p style="font-size:14px;color:#ccc;">Deine Punkte werden lokal im Browser gespeichert.</p>
+    <p class="small">Dieses Projekt ist ein **privates Hobbyprojekt** — keine echten Einsätze oder Gewinne möglich.</p>
+
+    <h3 style="color:#fff">🔐 Anmelden / Registrieren</h3>
+    <input id="username" placeholder="Benutzername (frei wählbar, lokal gespeichert)">
+    <div class="row">
+      <button id="loginBtn">Anmelden / Registrieren</button>
+      <button id="openImpressum">Impressum & Datenschutz</button>
+    </div>
+
+    <p class="small" style="margin-top:12px;">
+      Hinweis: Benutzername & Punkte werden **nur lokal im Browser (localStorage)** gespeichert. Es findet **keine Übertragung** an Drittanbieter statt.
+    </p>
   </div>
 
+  <!-- SPIEL -->
   <div class="container" id="gameScreen" style="display:none;">
     <h1>♠️ Black Jack Online ♥️</h1>
-    <p id="welcomeUser"></p>
+    <p id="welcomeUser" style="font-size:16px;color:var(--accent)"></p>
     <p id="message">🎲 Drücke 'Deal', um zu starten!</p>
 
     <div class="card-box" id="player-box">🧍 Spieler: -</div>
-    <div class="dealer-box" id="dealer-box" style="display: none;">🤖 Dealer:</div>
+    <div class="dealer-box" id="dealer-box" style="display:none">🤖 Dealer:</div>
 
     <div class="points" id="points">💰 Punkte: 100</div>
 
-    <div>
+    <div class="row" style="justify-content:center">
       <button id="deal">Deal</button>
       <button id="hit">Hit</button>
       <button id="stand">Stand</button>
     </div>
-    <div style="margin-top:15px;">
-      <button id="resetPoints">🔄 Punkte zurücksetzen</button>
+
+    <div class="row" style="margin-top:8px">
+      <button id="resetPoints">🔄 Punkte auf 100 zurücksetzen</button>
       <button id="leaderboardBtn">🏆 Bestenliste</button>
+      <button id="deleteAccount">🗑️ Konto löschen</button>
       <button id="logoutBtn">🚪 Abmelden</button>
     </div>
+
+    <p class="small" style="margin-top:10px;">
+      Keine echten Einsätze oder Preise. Nur Unterhaltung. Betreiber: Privates Hobbyprojekt.
+    </p>
   </div>
 
+  <!-- LEADERBOARD -->
   <div class="container" id="leaderboardScreen" style="display:none;">
     <h1>🏆 Bestenliste</h1>
     <div id="leaderboard"></div>
-    <button id="backToGame">⬅️ Zurück</button>
+    <div class="row" style="margin-top:12px">
+      <button id="backToGame">⬅️ Zurück</button>
+      <button id="openImpressum2">Impressum & Datenschutz</button>
+    </div>
   </div>
 
+  <!-- MODAL: Impressum & Datenschutz -->
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-hidden="true">
+    <div class="modal" role="document">
+      <h3>Impressum & Datenschutz</h3>
+
+      <h4>Impressum</h4>
+      <p style="margin-top:6px;">
+        Betreiber: Privates Hobbyprojekt<br>
+        Kontakt: <span class="small">keine öffentliche Kontaktadresse</span><br>
+        Nutzung: rein privat, nicht kommerziell.
+      </p>
+
+      <h4>Rechtlicher Hinweis</h4>
+      <p>
+        Dieses Spiel ist ein **reines Unterhaltungsprojekt**. Es werden **keine echten Einsätze** akzeptiert und **keine echten Gewinne** ausgezahlt. Es handelt sich nicht um ein Glücksspielangebot im Sinne einer Gewinnchance für finanzielle Vorteile.
+      </p>
+
+      <h4>Datenschutz (kurz)</h4>
+      <ul>
+        <li>Es werden nur folgende Daten lokal im Browser gespeichert: <b>Benutzername</b> und <b>Punktestand</b>, gespeichert über <code>localStorage</code>.</li>
+        <li>Es findet <b>keine Übermittlung</b> deiner Daten an externe Server oder Drittanbieter statt (sofern du nicht selbst zusätzliche Dienste einbindest).</li>
+        <li>Du kannst dein Konto jederzeit löschen (Button: "Konto löschen") — damit werden Benutzername und Punkte lokal entfernt.</li>
+        <li>Wenn du die Seite im Browser löschst/Cache/Cookies reinigst, sind die Daten ebenfalls verloren.</li>
+      </ul>
+
+      <h4>Weitere Hinweise</h4>
+      <p class="small">
+        Wenn du planst, die Seite öffentlich oder kommerziell zu betreiben oder wenn du externe Dienste (z. B. Firebase) integrierst, sollten Impressum, Datenschutzerklärung und ggf. Einwilligungen angepasst werden. Diese Seite ist für rein private / schulische / Hobby-Zwecke vorbereitet.
+      </p>
+
+      <div style="text-align:center; margin-top:12px;">
+        <button id="closeModal">Schließen</button>
+      </div>
+    </div>
+  </div>
+
+  <footer style="text-align:center; width:100%; max-width:720px; margin-top:12px;">
+    <p class="small">© Privates Hobbyprojekt — kein Echtgeld · <button id="openImpressumFooter" style="background:transparent;border:0;color:var(--muted);cursor:pointer">Impressum & Datenschutz</button></p>
+  </footer>
+
   <script>
-    // --- Globale Variablen ---
+    // --- Grundlogik / Spielvariablen ---
     let playerHand = [];
     let dealerHand = [];
-    let message = document.getElementById("message");
-    let dealerBox = document.getElementById("dealer-box");
-    let playerBox = document.getElementById("player-box");
-    let pointsBox = document.getElementById("points");
-    let currentUser = null;
     let points = 100;
+    let currentUser = null;
     let standBlocked = false;
 
     const fullDeck = [
@@ -123,65 +225,75 @@
     ];
     let cards = [...fullDeck];
 
-    // --- Login/Registrierung ---
-    document.getElementById("loginBtn").onclick = function() {
-      const username = document.getElementById("username").value.trim();
-      if (!username) return alert("Bitte gib einen Benutzernamen ein!");
-
-      let users = JSON.parse(localStorage.getItem("blackjackUsers") || "{}");
-      if (!users[username]) {
-        users[username] = { points: 100 };
-      }
-
+    // --- Helper ---
+    function saveUsersToStorage(users){
       localStorage.setItem("blackjackUsers", JSON.stringify(users));
-      currentUser = username;
-      points = users[username].points;
+    }
+    function loadUsersFromStorage(){
+      return JSON.parse(localStorage.getItem("blackjackUsers") || "{}");
+    }
+
+    function drawCard(){
+      if(cards.length === 0) cards = [...fullDeck];
+      const idx = Math.floor(Math.random() * cards.length);
+      const c = cards[idx];
+      cards.splice(idx,1);
+      return c;
+    }
+    function sum(hand){ return hand.reduce((a,b)=>a+b,0); }
+
+    // --- UI Elemente ---
+    const loginScreen = document.getElementById("loginScreen");
+    const gameScreen = document.getElementById("gameScreen");
+    const leaderboardScreen = document.getElementById("leaderboardScreen");
+    const message = document.getElementById("message");
+    const dealerBox = document.getElementById("dealer-box");
+    const playerBox = document.getElementById("player-box");
+    const pointsBox = document.getElementById("points");
+    const welcomeUser = document.getElementById("welcomeUser");
+
+    // --- Login/Register ---
+    document.getElementById("loginBtn").onclick = function(){
+      const usernameInput = document.getElementById("username");
+      const username = usernameInput.value.trim();
+      if(!username){
+        alert("Bitte gib einen Benutzernamen ein.");
+        return;
+      }
+      // Sanitize: nur einfache Zeichen (keine HTML) — wir store plain string
+      const safeName = username.replace(/</g,"&lt;").replace(/>/g,"&gt;").slice(0,30);
+
+      let users = loadUsersFromStorage();
+      if(!users[safeName]){
+        users[safeName] = { points: 100 };
+      }
+      saveUsersToStorage(users);
+
+      currentUser = safeName;
+      points = users[safeName].points;
       showGameScreen();
     };
 
-    function showGameScreen() {
-      document.getElementById("loginScreen").style.display = "none";
-      document.getElementById("leaderboardScreen").style.display = "none";
-      document.getElementById("gameScreen").style.display = "block";
-      document.getElementById("welcomeUser").textContent = `👋 Willkommen, ${currentUser}!`;
+    function showGameScreen(){
+      loginScreen.style.display = "none";
+      leaderboardScreen.style.display = "none";
+      gameScreen.style.display = "block";
+      welcomeUser.textContent = `👋 Willkommen, ${currentUser} — (Hobbyprojekt)`;
       updateUI();
     }
 
-    document.getElementById("logoutBtn").onclick = function() {
+    document.getElementById("logoutBtn").onclick = function(){
       currentUser = null;
-      document.getElementById("gameScreen").style.display = "none";
-      document.getElementById("loginScreen").style.display = "block";
+      playerHand = [];
+      dealerHand = [];
+      gameScreen.style.display = "none";
+      loginScreen.style.display = "block";
     };
 
-    // --- Spielmechanik ---
-    function drawCard() {
-      const index = Math.floor(Math.random() * cards.length);
-      const card = cards[index];
-      cards.splice(index, 1);
-      return card;
-    }
-
-    function sum(hand) {
-      return hand.reduce((a, b) => a + b, 0);
-    }
-
-    function updateUI() {
-      playerBox.textContent = `🧍 Spieler: ${playerHand.join(", ")} (Summe: ${sum(playerHand) || 0})`;
-      pointsBox.textContent = `💰 Punkte: ${points}`;
-      savePoints();
-    }
-
-    function savePoints() {
-      let users = JSON.parse(localStorage.getItem("blackjackUsers") || "{}");
-      if (currentUser && users[currentUser]) {
-        users[currentUser].points = points;
-        localStorage.setItem("blackjackUsers", JSON.stringify(users));
-      }
-    }
-
-    document.getElementById("deal").onclick = function() {
-      if (points < 10) {
-        message.textContent = "🤑 Du bist pleite. Punkte zurücksetzen oder neu starten!";
+    // --- Spielaktionen ---
+    document.getElementById("deal").onclick = function(){
+      if(points < 10){
+        message.textContent = "⚠️ Zu wenig Punkte — setze deine Punkte zurück oder spiele später.";
         return;
       }
       standBlocked = false;
@@ -194,16 +306,24 @@
       updateUI();
     };
 
-    document.getElementById("hit").onclick = function() {
+    document.getElementById("hit").onclick = function(){
+      if(playerHand.length === 0){
+        message.textContent = "Drücke zuerst Deal.";
+        return;
+      }
       playerHand.push(drawCard());
       updateUI();
-      if (sum(playerHand) > 21) message.textContent = "💥 Bust! Du hast verloren.";
+      if(sum(playerHand) > 21) message.textContent = "💥 Bust! Du hast verloren.";
     };
 
-    document.getElementById("stand").onclick = function() {
-      if (standBlocked) return;
+    document.getElementById("stand").onclick = function(){
+      if(standBlocked) return;
+      if(playerHand.length === 0){
+        message.textContent = "Drücke zuerst Deal.";
+        return;
+      }
       standBlocked = true;
-      while (sum(dealerHand) < 17) dealerHand.push(drawCard());
+      while(sum(dealerHand) < 17) dealerHand.push(drawCard());
 
       const playerScore = sum(playerHand);
       const dealerScore = sum(dealerHand);
@@ -227,35 +347,95 @@
       updateUI();
     };
 
+    function updateUI(){
+      playerBox.textContent = `🧍 Spieler: ${playerHand.join(", ")} (Summe: ${sum(playerHand) || 0})`;
+      pointsBox.textContent = `💰 Punkte: ${points}`;
+      saveCurrentUserPoints();
+    }
+
+    function saveCurrentUserPoints(){
+      if(!currentUser) return;
+      const users = loadUsersFromStorage();
+      if(users[currentUser]){
+        users[currentUser].points = points;
+        saveUsersToStorage(users);
+      }
+    }
+
     // --- Punkte zurücksetzen ---
-    document.getElementById("resetPoints").onclick = function() {
-      if (confirm("Willst du deine Punkte wirklich auf 100 zurücksetzen?")) {
+    document.getElementById("resetPoints").onclick = function(){
+      if(!currentUser) return;
+      if(confirm("Möchtest du deine Punkte wirklich auf 100 zurücksetzen?")){
         points = 100;
         updateUI();
+        alert("Punkte wurden zurückgesetzt.");
       }
     };
 
-    // --- Bestenliste ---
-    document.getElementById("leaderboardBtn").onclick = function() {
-      document.getElementById("gameScreen").style.display = "none";
-      document.getElementById("leaderboardScreen").style.display = "block";
+    // --- Bestenliste (gerätübergreifend? Hinweis) ---
+    document.getElementById("leaderboardBtn").onclick = function(){
+      // Hinweis: aktuell lokal -> nur auf diesem Gerät sichtbar.
+      // Wir zeigen die gesamte localStorage-Liste (alle Benutzer dieses Browsers).
+      gameScreen.style.display = "none";
+      leaderboardScreen.style.display = "block";
       showLeaderboard();
     };
+    document.getElementById("backToGame").onclick = function(){ leaderboardScreen.style.display = "none"; showGameScreen(); };
 
-    document.getElementById("backToGame").onclick = showGameScreen;
-
-    function showLeaderboard() {
-      const users = JSON.parse(localStorage.getItem("blackjackUsers") || "{}");
-      const sorted = Object.entries(users)
-        .sort((a, b) => b[1].points - a[1].points);
-
-      let html = "<ol style='text-align:left;'>";
-      sorted.forEach(([name, data]) => {
-        html += `<li>${name} — <b>${data.points} Punkte</b></li>`;
+    function showLeaderboard(){
+      const users = loadUsersFromStorage();
+      const sorted = Object.entries(users).sort((a,b)=> b[1].points - a[1].points);
+      if(sorted.length === 0){
+        document.getElementById("leaderboard").innerHTML = "<p class='small'>Keine Einträge vorhanden.</p>";
+        return;
+      }
+      let html = "<ol class='leader'>";
+      sorted.forEach(([name,data],i)=>{
+        // kleine Medaillen-Markierung
+        let medal = "";
+        if(i===0) medal = " <span class='tag'>🥇</span>";
+        else if(i===1) medal = " <span class='tag'>🥈</span>";
+        else if(i===2) medal = " <span class='tag'>🥉</span>";
+        html += `<li><strong>${name}</strong> — ${data.points} Punkte${medal}</li>`;
       });
       html += "</ol>";
+      html += "<p class='small' style='margin-top:8px;'>Hinweis: Diese Bestenliste ist <b>lokal</b> (nur dieses Gerät / Browser). Wenn du geräteübergreifende Speicherung möchtest, muss ein Cloud-Dienst (z. B. Firebase) genutzt werden.</p>";
       document.getElementById("leaderboard").innerHTML = html;
     }
+
+    // --- Konto löschen (lokal) ---
+    document.getElementById("deleteAccount").onclick = function(){
+      if(!currentUser) return;
+      if(!confirm("Willst du dein Konto UND deine lokalen Daten (Benutzername + Punkte) vollständig löschen? Diese Aktion ist nicht rückgängig.")) return;
+      let users = loadUsersFromStorage();
+      if(users[currentUser]) delete users[currentUser];
+      saveUsersToStorage(users);
+      alert("Konto wurde lokal gelöscht.");
+      // Abmelden und zurück zum Login
+      currentUser = null;
+      playerHand = []; dealerHand = []; points = 100;
+      gameScreen.style.display = "none";
+      loginScreen.style.display = "block";
+    };
+
+    // --- Modal (Impressum & Datenschutz) ---
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    document.getElementById("openImpressum").onclick = openModal;
+    document.getElementById("openImpressumFooter").onclick = openModal;
+    document.getElementById("openImpressum2").onclick = openModal;
+    document.getElementById("closeModal").onclick = closeModal;
+
+    function openModal(){ modalBackdrop.style.display = "flex"; modalBackdrop.setAttribute("aria-hidden","false"); }
+    function closeModal(){ modalBackdrop.style.display = "none"; modalBackdrop.setAttribute("aria-hidden","true"); }
+    modalBackdrop.addEventListener("click", (e)=>{ if(e.target === modalBackdrop) closeModal(); });
+
+    // --- Initialisierung: Wenn bereits ein eingeloggter Benutzer (session) existiert -> nicht automatisch einloggen, immer manuell -->
+    // (Wir bieten kein session cookie; Nutzer loggt sich neu ein.)
+    // Optional: Du könntest hier sessionStorage prüfen und automatisch einloggen.
+
+    // --- Sicherheitshinweis in UI: Entfernt irreführende Texte über Käufe ---
+    // (bereits umgesetzt: kein Hinweis auf kostenpflichtige Käufe)
+
   </script>
 </body>
 </html>
