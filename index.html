@@ -4,224 +4,56 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>♠️ Black Jack Online ♥️ — Hobbyprojekt</title>
-  <style>
-    :root{
-      --bg:#001a00;
-      --panel:#142814;
-      --accent:#FFD700;
-      --muted:#aaa;
-    }
-    *{box-sizing:border-box}
-    body{
-      margin:0;
-      min-height:100vh;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-      background:var(--bg);
-      color:#fff;
-      font-family:Arial,Helvetica,sans-serif;
-      padding:20px;
-    }
-    .container{
-      width:100%;
-      max-width:720px;
-      background:var(--panel);
-      border-radius:18px;
-      padding:22px;
-      text-align:center;
-      box-shadow:0 8px 30px rgba(0,0,0,0.6);
-    }
-    h1{ color:var(--accent); margin:6px 0 10px; font-size:34px;}
-    .card-box, .dealer-box{
-      border-radius:12px;
-      padding:14px;
-      margin:10px 0;
-      text-align:left;
-    }
-    .card-box{ background:#004d00 }
-    .dealer-box{ background:#333333 }
-    .points{ color:var(--accent); font-size:20px; margin:10px 0 16px;}
-    input[type="text"]{
-      width:70%;
-      padding:10px;
-      border-radius:8px;
-      border:none;
-      margin:6px 0;
-      font-size:16px;
-    }
-    button{
-      padding:10px 16px;
-      margin:6px;
-      font-size:15px;
-      border-radius:10px;
-      border:none;
-      cursor:pointer;
-      color:#000;
-    }
-    #deal{ background:#228B22 }
-    #hit{ background:#0066CC }
-    #stand{ background:#CC0000 }
-    #resetPoints{ background:#FF8C00 }
-    #leaderboardBtn{ background:#4444AA }
-    #deleteAccount{ background:#882222 }
-    .small{ font-size:13px; color:var(--muted) }
 
-    /* --- Neuer, dezenter Footer --- */
-    footer{
-      position:fixed;
-      bottom:0;
-      left:0;
-      width:100%;
-      text-align:center;
-      font-size:12px;
-      color:var(--muted);
-      background:rgba(0,0,0,0.4);
-      padding:4px 8px;
-      border-top:1px solid rgba(255,255,255,0.1);
-      z-index:10;
-    }
-    footer button{
-      background:none;
-      border:none;
-      color:var(--muted);
-      cursor:pointer;
-      font-size:12px;
-      text-decoration:underline;
-    }
+  <!-- Firebase -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, getDocs, collection, deleteDoc } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
-    /* Modal */
-    .modal-backdrop{
-      position:fixed;
-      inset:0;
-      background:rgba(0,0,0,0.6);
-      display:none;
-      align-items:center;
-      justify-content:center;
-      padding:20px;
-      z-index:50;
-    }
-    .modal{
-      background:#0f2610;
-      border-radius:12px;
-      padding:18px;
-      width:100%;
-      max-width:720px;
-      color:#eee;
-      text-align:left;
-      max-height:90vh;
-      overflow:auto;
-    }
-    .modal h3{ margin-top:0; color:var(--accent) }
-    .row{ display:flex; gap:10px; justify-content:center; flex-wrap:wrap; margin-top:10px; }
-    ol.leader{ text-align:left; padding-left:20px; color:#fff; }
-    .tag{ display:inline-block; font-size:12px; padding:2px 8px; border-radius:12px; background:#2b2b2b; margin-left:8px; }
+    // 🔧 Eigene Firebase-Konfiguration eintragen
+    const firebaseConfig = {
+      apiKey: "DEIN_API_KEY",
+      authDomain: "DEIN_AUTH_DOMAIN",
+      projectId: "DEIN_PROJECT_ID",
+      storageBucket: "DEIN_STORAGE_BUCKET",
+      messagingSenderId: "DEIN_SENDER_ID",
+      appId: "DEINE_APP_ID"
+    };
 
-    @media(max-width:520px){
-      input[type="text"]{ width:100% }
-      .row{ flex-direction:column }
-    }
-  </style>
-</head>
-<body>
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-  <!-- LOGIN -->
-  <div class="container" id="loginScreen">
-    <h1>♠️ Black Jack Online ♥️</h1>
-    <p class="small">Dieses Projekt ist ein <b>privates Hobbyprojekt</b> — keine echten Einsätze oder Gewinne möglich.</p>
-
-    <h3 style="color:#fff">🔐 Anmelden / Registrieren</h3>
-    <input id="username" placeholder="Benutzername (lokal gespeichert)">
-    <div class="row">
-      <button id="loginBtn">Anmelden / Registrieren</button>
-    </div>
-
-    <p class="small" style="margin-top:12px;">
-      Hinweis: Benutzername & Punkte werden <b>nur lokal im Browser (localStorage)</b> gespeichert. Es findet <b>keine Übertragung</b> an Dritte statt.
-    </p>
-  </div>
-
-  <!-- SPIEL -->
-  <div class="container" id="gameScreen" style="display:none;">
-    <h1>♠️ Black Jack Online ♥️</h1>
-    <p id="welcomeUser" style="font-size:16px;color:var(--accent)"></p>
-    <p id="message">🎲 Drücke 'Deal', um zu starten!</p>
-
-    <div class="card-box" id="player-box">🧍 Spieler: -</div>
-    <div class="dealer-box" id="dealer-box" style="display:none">🤖 Dealer:</div>
-
-    <div class="points" id="points">💰 Punkte: 100</div>
-
-    <div class="row" style="justify-content:center">
-      <button id="deal">Deal</button>
-      <button id="hit">Hit</button>
-      <button id="stand">Stand</button>
-    </div>
-
-    <div class="row" style="margin-top:8px">
-      <button id="resetPoints">🔄 Punkte auf 100 zurücksetzen</button>
-      <button id="leaderboardBtn">🏆 Bestenliste</button>
-      <button id="deleteAccount">🗑️ Konto löschen</button>
-      <button id="logoutBtn">🚪 Abmelden</button>
-    </div>
-
-    <p class="small" style="margin-top:10px;">
-      Keine echten Einsätze oder Preise. Nur Unterhaltung. Betreiber: Privates Hobbyprojekt.
-    </p>
-  </div>
-
-  <!-- LEADERBOARD -->
-  <div class="container" id="leaderboardScreen" style="display:none;">
-    <h1>🏆 Bestenliste</h1>
-    <div id="leaderboard"></div>
-    <div class="row" style="margin-top:12px">
-      <button id="backToGame">⬅️ Zurück</button>
-    </div>
-  </div>
-
-  <!-- MODAL: Impressum & Datenschutz -->
-  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-hidden="true">
-    <div class="modal" role="document">
-      <h3>Impressum & Datenschutz</h3>
-      <p><b>Betreiber:</b> Hannes Gabriel Günther<br>
-      <b>Adresse:</b> Dörnfeld an der Heide 54F 07426 Königsee<br>
-      <b>Nutzung:</b> rein privat, nicht kommerziell.</p>
-
-      <h4>Rechtlicher Hinweis</h4>
-      <p>
-        Dieses Spiel ist ein <b>reines Unterhaltungsprojekt</b>. Es werden <b>keine echten Einsätze</b> akzeptiert und <b>keine echten Gewinne</b> ausgezahlt.
-      </p>
-
-      <h4>Datenschutz</h4>
-      <ul>
-        <li>Nur lokale Speicherung (Benutzername & Punkte im Browser).</li>
-        <li>Keine Server, keine Cookies, keine externe Übertragung.</li>
-        <li>Daten löschbar über „Konto löschen“ oder Browser-Cache.</li>
-      </ul>
-
-      <div style="text-align:center; margin-top:12px;">
-        <button id="closeModal">Schließen</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Dezenter Footer -->
-  <footer>
-    © Privates Hobbyprojekt — kein Echtgeld · 
-    <button id="openImpressumFooter">Impressum & Datenschutz</button>
-  </footer>
-
-  <script>
-    // --- Grundlogik / Spielvariablen ---
+    // --- Globale Variablen ---
     let playerHand = [], dealerHand = [], points = 100, currentUser = null, standBlocked = false;
     const fullDeck = [2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6,7,7,7,7,8,8,8,8,9,9,9,9,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,10,11,11,11,11];
     let cards = [...fullDeck];
 
-    function saveUsersToStorage(users){ localStorage.setItem("blackjackUsers", JSON.stringify(users)); }
-    function loadUsersFromStorage(){ return JSON.parse(localStorage.getItem("blackjackUsers") || "{}"); }
-    function drawCard(){ if(cards.length===0) cards=[...fullDeck]; const i=Math.floor(Math.random()*cards.length); return cards.splice(i,1)[0]; }
-    function sum(h){ return h.reduce((a,b)=>a+b,0); }
+    // Firestore Funktionen
+    async function saveUserData(username, points) {
+      await setDoc(doc(db, "blackjackUsers", username), { points: points });
+    }
+    async function loadUserData(username) {
+      const ref = doc(db, "blackjackUsers", username);
+      const snap = await getDoc(ref);
+      if (snap.exists()) {
+        return snap.data().points;
+      } else {
+        await setDoc(ref, { points: 100 });
+        return 100;
+      }
+    }
+    async function deleteUser(username) {
+      await deleteDoc(doc(db, "blackjackUsers", username));
+    }
+    async function getLeaderboard() {
+      const usersRef = collection(db, "blackjackUsers");
+      const snap = await getDocs(usersRef);
+      const list = [];
+      snap.forEach(doc => list.push({ name: doc.id, points: doc.data().points }));
+      return list.sort((a,b)=>b.points - a.points);
+    }
 
+    // --- UI Elemente ---
     const loginScreen=document.getElementById("loginScreen"),
           gameScreen=document.getElementById("gameScreen"),
           leaderboardScreen=document.getElementById("leaderboardScreen"),
@@ -231,14 +63,13 @@
           pointsBox=document.getElementById("points"),
           welcomeUser=document.getElementById("welcomeUser");
 
-    document.getElementById("loginBtn").onclick=function(){
+    // --- Login ---
+    document.getElementById("loginBtn").onclick=async function(){
       const name=document.getElementById("username").value.trim();
       if(!name){alert("Bitte gib einen Benutzernamen ein.");return;}
       const safe=name.replace(/</g,"&lt;").replace(/>/g,"&gt;").slice(0,30);
-      let users=loadUsersFromStorage();
-      if(!users[safe]) users[safe]={points:100};
-      saveUsersToStorage(users);
-      currentUser=safe; points=users[safe].points;
+      currentUser=safe;
+      points=await loadUserData(safe);
       showGameScreen();
     };
 
@@ -254,6 +85,9 @@
       currentUser=null; playerHand=[]; dealerHand=[];
       gameScreen.style.display="none"; loginScreen.style.display="block";
     };
+
+    function drawCard(){ if(cards.length===0) cards=[...fullDeck]; const i=Math.floor(Math.random()*cards.length); return cards.splice(i,1)[0]; }
+    function sum(h){ return h.reduce((a,b)=>a+b,0); }
 
     document.getElementById("deal").onclick=function(){
       if(points<10){message.textContent="⚠️ Zu wenig Punkte.";return;}
@@ -283,40 +117,36 @@
 
     function updateUI(){
       playerBox.textContent=`🧍 Spieler: ${playerHand.join(", ")} (Summe: ${sum(playerHand)||0})`;
-      pointsBox.textContent=`💰 Punkte: ${points}`; saveCurrentUserPoints();
-    }
-    function saveCurrentUserPoints(){
-      if(!currentUser)return;
-      const users=loadUsersFromStorage();
-      if(users[currentUser]){users[currentUser].points=points; saveUsersToStorage(users);}
+      pointsBox.textContent=`💰 Punkte: ${points}`;
+      if(currentUser) saveUserData(currentUser, points);
     }
 
     document.getElementById("resetPoints").onclick=function(){
       if(confirm("Punkte auf 100 zurücksetzen?")){points=100;updateUI();}
     };
 
-    document.getElementById("leaderboardBtn").onclick=function(){
-      gameScreen.style.display="none"; leaderboardScreen.style.display="block"; showLeaderboard();
+    document.getElementById("leaderboardBtn").onclick=async function(){
+      gameScreen.style.display="none"; leaderboardScreen.style.display="block";
+      const list=await getLeaderboard();
+      let html="<ol class='leader'>";
+      list.forEach((u,i)=>{
+        let medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
+        html+=`<li><strong>${u.name}</strong> — ${u.points} Punkte ${medal}</li>`;
+      });
+      html+="</ol><p class='small'>Globale Bestenliste (aus Firestore)</p>";
+      document.getElementById("leaderboard").innerHTML=html;
     };
     document.getElementById("backToGame").onclick=function(){
       leaderboardScreen.style.display="none"; showGameScreen();
     };
-    function showLeaderboard(){
-      const users=loadUsersFromStorage();
-      const sorted=Object.entries(users).sort((a,b)=>b[1].points-a[1].points);
-      let html="<ol class='leader'>";
-      sorted.forEach(([n,d],i)=>{
-        let medal=i===0?"🥇":i===1?"🥈":i===2?"🥉":"";
-        html+=`<li><strong>${n}</strong> — ${d.points} Punkte ${medal}</li>`;
-      });
-      html+="</ol><p class='small'>Hinweis: lokale Bestenliste (nur dieses Gerät).</p>";
-      document.getElementById("leaderboard").innerHTML=html;
-    }
 
-    document.getElementById("deleteAccount").onclick=function(){
+    document.getElementById("deleteAccount").onclick=async function(){
       if(!currentUser)return;
-      if(confirm("Lokales Konto löschen?")){let u=loadUsersFromStorage();delete u[currentUser];saveUsersToStorage(u);
-        currentUser=null;playerHand=[];dealerHand=[];points=100;gameScreen.style.display="none";loginScreen.style.display="block";}
+      if(confirm("Konto und Punkte aus Firestore löschen?")){
+        await deleteUser(currentUser);
+        currentUser=null;playerHand=[];dealerHand=[];points=100;
+        gameScreen.style.display="none";loginScreen.style.display="block";
+      }
     };
 
     // Modal-Steuerung
@@ -327,5 +157,83 @@
     document.getElementById("closeModal").onclick=closeModal;
     modal.addEventListener("click",e=>{if(e.target===modal)closeModal();});
   </script>
+
+  <style>
+    :root{--bg:#001a00;--panel:#142814;--accent:#FFD700;--muted:#aaa;}
+    body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg);color:#fff;font-family:Arial,sans-serif;padding:20px;}
+    .container{width:100%;max-width:720px;background:var(--panel);border-radius:18px;padding:22px;text-align:center;box-shadow:0 8px 30px rgba(0,0,0,0.6)}
+    h1{color:var(--accent);margin:6px 0 10px;font-size:34px}
+    button{padding:10px 16px;margin:6px;border:none;border-radius:10px;cursor:pointer;color:#000}
+    #deal{background:#228B22}#hit{background:#0066CC}#stand{background:#CC0000}#resetPoints{background:#FF8C00}#leaderboardBtn{background:#4444AA}#deleteAccount{background:#882222}
+    footer{position:fixed;bottom:0;left:0;width:100%;text-align:center;font-size:12px;color:var(--muted);background:rgba(0,0,0,0.4);padding:4px 8px;border-top:1px solid rgba(255,255,255,0.1)}
+    footer button{background:none;border:none;color:var(--muted);cursor:pointer;font-size:12px;text-decoration:underline}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.6);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+    .modal{background:#0f2610;border-radius:12px;padding:18px;width:100%;max-width:720px;color:#eee;text-align:left;max-height:90vh;overflow:auto}
+  </style>
+</head>
+<body>
+
+  <!-- LOGIN -->
+  <div class="container" id="loginScreen">
+    <h1>♠️ Black Jack Online ♥️</h1>
+    <input id="username" placeholder="Benutzername">
+    <button id="loginBtn">Anmelden / Registrieren</button>
+    <p class="small">Benutzername & Punkte werden in Firebase Firestore gespeichert.</p>
+  </div>
+
+  <!-- SPIEL -->
+  <div class="container" id="gameScreen" style="display:none;">
+    <h1>♠️ Black Jack Online ♥️</h1>
+    <p id="welcomeUser"></p>
+    <p id="message">🎲 Drücke 'Deal', um zu starten!</p>
+    <div class="card-box" id="player-box"></div>
+    <div class="dealer-box" id="dealer-box" style="display:none"></div>
+    <div class="points" id="points"></div>
+    <div class="row">
+      <button id="deal">Deal</button>
+      <button id="hit">Hit</button>
+      <button id="stand">Stand</button>
+    </div>
+    <div class="row">
+      <button id="resetPoints">Punkte auf 100</button>
+      <button id="leaderboardBtn">Bestenliste</button>
+      <button id="deleteAccount">Konto löschen</button>
+      <button id="logoutBtn">Abmelden</button>
+    </div>
+  </div>
+
+  <!-- LEADERBOARD -->
+  <div class="container" id="leaderboardScreen" style="display:none;">
+    <h1>🏆 Bestenliste</h1>
+    <div id="leaderboard"></div>
+    <button id="backToGame">Zurück</button>
+  </div>
+
+  <!-- MODAL: Impressum & Datenschutz -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <h3>Impressum & Datenschutz</h3>
+      <p><b>Verantwortlicher:</b><br>Max Mustermann<br>Adresse XY<br>Deutschland<br>E-Mail: max@example.de<br>Privates, nicht-kommerzielles Projekt.</p>
+      <h4>Zweck</h4>
+      <p>Diese Website dient ausschließlich der Unterhaltung (Blackjack ohne Echtgeld).</p>
+      <h4>Datenverarbeitung mit Firebase Firestore</h4>
+      <p>Zur Speicherung der Benutzerpunkte und -namen wird Google Firebase Firestore verwendet (Anbieter: Google Ireland Limited, Dublin, Irland).</p>
+      <ul>
+        <li>Gespeicherte Daten: Benutzername, Punktestand</li>
+        <li>Zweck: Darstellung von Punkteständen & Bestenlisten</li>
+        <li>Keine Weitergabe an Dritte</li>
+        <li>Löschung jederzeit über „Konto löschen“ möglich</li>
+      </ul>
+      <p>Weitere Infos: <a href="https://firebase.google.com/support/privacy" target="_blank">Firebase Privacy</a></p>
+      <button id="closeModal">Schließen</button>
+    </div>
+  </div>
+
+  <footer>
+    © Privates Hobbyprojekt — kein Echtgeld · 
+    <button id="openImpressumFooter">Impressum & Datenschutz</button>
+  </footer>
+
 </body>
 </html>
+
