@@ -110,7 +110,7 @@
       else if(ps>ds) message.textContent="🎉 Du gewinnst!";
       else if(ps<ds) message.textContent="❌ Dealer gewinnt.";
       else message.textContent="🤝 Unentschieden!";
-      if(ps<=21){ if(ds>21||ps>ds) points+=20; else if(ps===ds) points+=10; }
+      if(ps<=21){ if(ds>21||ps>ds) points+=30; else if(ps===ds) points+=10; }
       dealerBox.textContent=`🤖 Dealer: ${dealerHand.join(", ")} (Summe: ${ds})`;
       dealerBox.style.display="block"; updateUI();
     };
